@@ -1,0 +1,113 @@
+/* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+ * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+ */
+
+#include "../inc/list.h"
+#include "../inc/errors.h"
+#include <stdlib.h>
+
+node_t *create_node(int num)
+{
+	node_t *node = malloc(sizeof(node_t));
+	if(node != NULL)
+	{
+		node->num = num;
+		node->next = NULL;
+	}
+	return node;
+}
+
+char list_add_front(node_t **head, int num)
+{
+	char rc = ERR_OK;
+	node_t *tmp_node = create_node(num);
+	if(tmp_node != NULL)
+	{
+		tmp_node->next = (*head);
+		(*head) = tmp_node;
+	}
+	else
+	{
+		rc = ERR_ALLOCATE_MEM;
+	}
+	return rc;
+}
+
+char list_find(node_t *head, int num, int *count_cmp)
+{
+	char is_find = 0;
+	int count = 0;
+	while(head != NULL && !is_find)
+	{
+		if(head->num == num)
+		{
+			is_find = 1;
+		}
+		else
+		{
+			head = head->next;
+		}
+		++count;
+	}
+	*count_cmp = count;
+	return is_find;
+}
+
+char list_delete_num(node_t **head, int num)
+{
+	char is_deleted = 0;
+	node_t *prev = NULL;
+	node_t *cur = *head;
+
+	while(cur != NULL && !is_deleted)
+	{
+		if(cur->num == num)
+		{
+			if(prev != NULL)
+			{
+				prev->next = cur->next;
+			}
+			else
+			{
+				*head = cur->next;
+			}
+			free(cur);
+			cur = NULL;
+			is_deleted = 1;
+		}
+		if(is_deleted == 0 && cur != NULL)
+		{
+			prev = cur;
+			cur = cur->next;		
+		}
+	}
+	return is_deleted;
+}
+
+void free_list(node_t **head)
+{
+	if(head != NULL && *head != NULL)
+	{
+		node_t *cur = *head;
+		node_t *tmp;
+		for(; cur;)
+		{
+			tmp = cur;
+			cur = cur->next;
+			free(tmp);
+		}
+	}
+}
+
+void print_node(node_t *node, void *arg)
+{
+	printf(arg, node->num);
+}
+
+void list_apply(node_t *head, void (*f)(node_t*, void*), void* arg)
+{
+	for(; head != NULL; head = head->next)
+	{
+		f(head, arg);
+	}
+}
